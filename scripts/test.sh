@@ -3,13 +3,7 @@
 set -ev
 
 SCRIPT_DIR=$(dirname "$0")
-
-# no need for github action
-# if [[ "$(uname)" == "Darwin" ]]; then
-#     DOCKER_CMD=docker
-# else
-#     DOCKER_CMD="sudo docker"
-# fi
+DOCKER_CMD=docker
 
 CODE_DIR=$(cd $SCRIPT_DIR/..; pwd)
 echo $CODE_DIR
