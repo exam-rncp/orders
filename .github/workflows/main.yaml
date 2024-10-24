@@ -13,8 +13,14 @@ on:
       - "*"  # run for tags
 
 jobs:
-  test:
+  build:
+    permissions:
+      contents: write 
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: .
     env:
       GROUP: f3lin
       REPO: orders
@@ -26,7 +32,7 @@ jobs:
           COVERALLS_TOKEN: ${{ secrets.COVERALLS_TOKEN }}
         run: |
           chmod +x scripts/test.sh
-          ./scripts/test.sh
+          bash scripts/test.sh
 
       - name: Automatic Tagging of Releases
         id: increment-git-tag
@@ -47,7 +53,7 @@ jobs:
           TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
         run: |
           chmod +x scripts/build.sh
-          ./scripts/test.sh
+          bash scripts/test.sh
 
       - name: Push user to Docker Hub
         env:
