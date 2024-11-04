@@ -24,6 +24,8 @@ jobs:
     env:
       GROUP: f3lin
       REPO: orders
+      AWS_REGION: eu-central-1
+      
     steps:
       - uses: actions/checkout@v4
 
@@ -60,3 +62,28 @@ jobs:
           TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
         run: |
           docker push $GROUP/$REPO:$TAG
+
+      - name: Configure AWS credentials from AWS account
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR Private
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Tag Docker Image
+        env:
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          docker tag ${GROUP}/${REPO}:${IMAGE_TAG} ${REGISTRY}/${REPO}:$IMAGE_TAG
+
+      - name: Push Orders docker image to Amazon ECR Private
+        env:
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          IMAGE_TAG: ${{ steps.increment-git-tag.outputs.git-tag }}
+        run: |
+          docker push $REGISTRY/$REPO:$IMAGE_TAG
